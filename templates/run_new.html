@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block body %}<h1>New production run</h1>
+<form method="get" class="card form"><div class="row"><div><label>Product</label><select name="product" onchange="this.form.submit()">{% for p in products %}<option value="{{ p.id }}" {{ 'selected' if p.id == product.id }}>{{ p.name }}</option>{% endfor %}</select></div>
+<div><label>Batches</label><input type="number" name="batches" min="1" value="{{ batches }}" onchange="this.form.submit()"></div></div></form>
+<p>Expected output from the BOM: <b>{{ expected|fmt }} packets</b>. Issue the raw materials below. Change a quantity if the floor used more or less.</p>
+<form method="post" class="card"><input type="hidden" name="go" value="1"><input type="hidden" name="product" value="{{ product.id }}"><input type="hidden" name="batches" value="{{ batches }}">
+<div class="scroll"><table><thead><tr><th>Raw material</th><th class="num">BOM quantity</th><th>Issue now</th><th>Unit</th><th class="num">In stock</th></tr></thead><tbody>
+{% for i, n, u, q in plan %}<tr><td>{{ n }}</td><td class="num">{{ q|fmt }} {{ u }}</td><td><input type="number" step="any" name="qty_{{ i }}" value="{{ q|fmt }}" required></td>
+<td><select name="unit_{{ i }}" style="width:90px">{% for x in units %}<option {{ 'selected' if x == u }}>{{ x }}</option>{% endfor %}</select></td><td class="num">{{ stock[i]|fmt }} {{ u }}</td></tr>{% endfor %}</tbody></table></div>
+<label>Date</label><input type="date" name="date" value="{{ today }}" style="max-width:220px"><div class="btns"><button class="btn">Start run and issue materials</button></div></form>{% endblock %}

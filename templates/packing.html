@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block body %}<h1>Packing slip · {{ inv.inv_no }}</h1><p class="mut">{{ inv.cname }} · {{ inv.dispatched_on or inv.date }}</p>
+<div class="card"><table><thead><tr><th>Product</th><th class="num">Packets</th><th class="num">Full cartons</th><th class="num">Loose packets</th></tr></thead><tbody>
+{% for n, q, c, l, size in rows %}<tr><td>{{ n }}</td><td class="num">{{ q|fmt }}</td><td class="num">{{ c }} <span class="mut">(of {{ size }})</span></td><td class="num">{{ l }}</td></tr>{% endfor %}</tbody></table></div>
+{% for n, q, c, l, size in rows %}<div class="eq" style="margin-top:12px">{{ q|fmt }} packets = <b>{{ c }} cartons + {{ l }} loose packets</b></div>{% endfor %}
+<div class="btns noprint"><button class="btn" onclick="window.print()">Print</button><a class="btn ghost" href="{{ url_for('invoice_view', iid=inv.id) }}">Back</a></div>{% endblock %}

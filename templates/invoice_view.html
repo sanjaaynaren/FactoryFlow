@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block body %}
+<h1>{{ inv.inv_no }} {% if inv.status == 'CANCELLED' %}<span class="pill bad">Cancelled · {{ inv.cn_no }}</span>{% endif %}</h1>
+<p class="mut">{{ inv.cname }} · GSTIN {{ inv.cgstin or 'unregistered' }} · {{ inv.cstate }} · {{ inv.date }} · {{ 'CGST + SGST' if inv.supply == 'INTRA' else 'IGST' }}</p>
+<div class="card scroll"><table><thead><tr><th>Item</th><th>HSN</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Taxable</th><th class="num">GST %</th><th class="num">CGST</th><th class="num">SGST</th><th class="num">IGST</th></tr></thead><tbody>
+{% for l in lines %}<tr><td>{{ l.name }}</td><td>{{ l.hsn }}</td><td class="num">{{ l.qty|fmt }}</td><td class="num">{{ l.rate|inr }}</td><td class="num">{{ l.taxable|inr }}</td><td class="num">{{ l.gst_rate|fmt }}</td><td class="num">{{ l.cgst|inr }}</td><td class="num">{{ l.sgst|inr }}</td><td class="num">{{ l.igst|inr }}</td></tr>{% endfor %}
+<tr class="total"><td colspan="4">Total</td><td class="num">{{ inv.taxable|inr }}</td><td></td><td class="num">{{ inv.cgst|inr }}</td><td class="num">{{ inv.sgst|inr }}</td><td class="num">{{ inv.igst|inr }}</td></tr></tbody></table></div>
+<div class="eq" style="margin-top:14px">Invoice total <b>{{ inv.total|inr }}</b> − paid {{ paid|inr }} = <b>due {{ due|inr }}</b></div>
+<div class="btns"><a class="btn" href="{{ url_for('invoice_pdf', iid=inv.id) }}" target="_blank">Download PDF</a><a class="btn ghost" href="{{ wa }}" target="_blank">Share on WhatsApp</a>
+{% if inv.status == 'POSTED' and user.role == 'admin' %}
+{% if not inv.dispatched_on %}<form method="post" action="{{ url_for('invoice_dispatch', iid=inv.id) }}"><button class="btn">Record dispatch</button></form>{% else %}<a class="btn ghost" href="{{ url_for('packing', iid=inv.id) }}">Packing slip</a>{% endif %}
+{% if due > 0 %}<a class="btn ghost" href="{{ url_for('invoice_pay', iid=inv.id) }}">Record payment</a>{% endif %}{% endif %}</div>
+{% if inv.dispatched_on %}<p class="mut">Dispatched on {{ inv.dispatched_on }}</p>{% endif %}
+{% if pays %}<h2>Payments</h2><div class="card"><table><tbody>{% for p in pays %}<tr><td>{{ p.date }}</td><td>{{ p.mode }}</td><td>{{ p.ref }}</td><td class="num">{{ p.amount|inr }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% if inv.status == 'POSTED' and user.role == 'admin' %}<details style="margin-top:20px"><summary class="mut">Cancel this invoice (issues a credit note)</summary>
+<form method="post" action="{{ url_for('invoice_cancel', iid=inv.id) }}" class="card form"><label>Reason</label><input name="reason" required><div class="btns"><button class="btn bad">Issue credit note</button></div></form></details>{% endif %}
+{% if inv.status == 'CANCELLED' %}<p class="mut">Credit note {{ inv.cn_no }} on {{ inv.cn_date }}: {{ inv.cn_reason }}</p>{% endif %}{% endblock %}

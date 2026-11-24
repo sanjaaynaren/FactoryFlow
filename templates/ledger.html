@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block body %}<h1>{{ it.name }}: how the balance is made</h1>
+<div class="eq">Closing balance <b>{{ bal|fmt }} {{ it.unit }}</b> = {% for l, q in groups %}{{ l }} {{ q|fmt }}{{ ' + ' if not loop.last }}{% endfor %} (every line below is a source document). Average cost {{ avg|q2 }} per {{ it.unit }}.</div>
+<div class="card scroll" style="margin-top:14px"><table><thead><tr>{% for h in rep.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead><tbody>
+{% for r in rep.rows %}<tr>{% for c in r %}<td class="{{ 'num' if c.__class__.__name__ == 'Decimal' }}">{% if c.__class__.__name__ == 'Decimal' %}{{ c|fmt if c == c.to_integral_value() or (c|string).split('.')[-1]|length <= 3 else c|q2 }}{% else %}{{ c }}{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
+<div class="btns"><a class="btn ghost" href="{{ url_for('stock') }}">Back to stock</a></div>{% endblock %}

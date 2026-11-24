@@ -1,0 +1,10 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in · FactoryFlow</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body>
+<div class="hero"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+<form class="login" method="post"><h1>FactoryFlow</h1><p>From the salesman's order to the auditor's report</p>
+{% with msgs = get_flashed_messages(with_categories=true) %}{% for c, m in msgs %}<div class="msg {{ c }}">{{ m }}</div>{% endfor %}{% endwith %}
+<input name="username" placeholder="Username" autocomplete="username" required autofocus><div style="height:10px"></div>
+<input name="password" type="password" placeholder="Password" autocomplete="current-password" required><div style="height:16px"></div>
+<button class="btn">Sign in</button>
+<details><summary>Test logins</summary>Password for all: <b>demo123</b><br>salesA, salesB (salesman) · admin · prod (production) · accountant · owner</details></form></div></body></html>

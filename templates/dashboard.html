@@ -1,0 +1,32 @@
+{% extends "base.html" %}{% block body %}
+{% macro st(s) %}<span class="pill {{ 'ok' if s in ('DISPATCHED','INVOICED','APPROVED') else 'bad' if s == 'REJECTED' else 'warn' }}">{{ s }}</span>{% endmacro %}
+<h1>Hello, {{ user.name }}</h1>
+{% if user.role == 'salesman' %}
+<div class="btns"><a class="btn big" href="{{ url_for('order_new') }}">New order</a></div>
+<h2>My recent orders</h2><div class="card scroll">{% if recent %}<table><tbody>{% for o in recent %}<tr><td><a href="{{ url_for('order_view', oid=o.id) }}">{{ o.order_no }}</a></td><td>{{ o.cname }}</td><td>{{ st(o.status) }}</td></tr>{% endfor %}</tbody></table>{% else %}<p class="mut">No orders yet. Tap New order to place one.</p>{% endif %}</div>
+{% if sales %}<h2>My sales by customer</h2><div class="card"><table><tbody>{% for c, v in sales.items() %}<tr><td>{{ c }}</td><td class="num">{{ v[0]|fmt }} packets</td><td class="num">{{ v[1]|inr }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+
+{% elif user.role == 'admin' %}
+<div class="grid"><a class="card stat" href="{{ url_for('orders_list') }}"><div class="n">{{ d.pending }}</div><div class="l">Orders waiting for approval</div></a>
+<div class="card stat"><div class="n">{{ d.orders_today }}</div><div class="l">Orders today</div></div>
+<a class="card stat" href="{{ url_for('report', name='outstanding') }}"><div class="n">{{ d.outstanding|inr }}</div><div class="l">Outstanding dues</div></a></div>
+<h2>Needs your action</h2><div class="card scroll">{% if todo %}<table><tbody>{% for o in todo %}<tr><td><a href="{{ url_for('order_view', oid=o.id) }}">{{ o.order_no }}</a></td><td>{{ o.cname }}</td><td>{{ st(o.status) }}</td></tr>{% endfor %}</tbody></table>{% else %}<p class="mut">All caught up.</p>{% endif %}</div>
+
+{% elif user.role == 'production' %}
+<div class="btns"><a class="btn big" href="{{ url_for('run_new') }}">New production run</a><a class="btn ghost" href="{{ url_for('purchase_new') }}">Record purchase</a></div>
+{% if d.alerts %}<div class="warn-box"><b>Variance alerts</b>{% for a in d.alerts %}<div><a href="{{ url_for('run_view', rid=a.id) }}">{{ a.run_no }}</a>: {{ a.msgs|join(', ') }}</div>{% endfor %}</div>{% endif %}
+<h2>Latest runs</h2><div class="card scroll">{% if open_runs %}<table><tbody>{% for r in open_runs %}<tr><td><a href="{{ url_for('run_view', rid=r.id) }}">{{ r.run_no }}</a></td><td>{{ r.pname }}</td><td>{{ r.date }}</td><td><span class="pill {{ 'ok' if r.status == 'DONE' else 'warn' }}">{{ r.status }}</span></td></tr>{% endfor %}</tbody></table>{% else %}<p class="mut">No runs yet.</p>{% endif %}</div>
+
+{% elif user.role == 'accountant' %}
+<p class="mut">Pick a report for the month.</p>
+<div class="grid">{% for k, v in {'sales_register':'Sales register','gst_summary':'GST summary','purchase_register':'Purchase register','stock_summary':'Stock summary','production':'Production variance','outstanding':'Outstanding with ageing'}.items() %}<a class="card" href="{{ url_for('report', name=k) }}">{{ v }}</a>{% endfor %}</div>
+<div class="btns"><a class="btn ghost" href="{{ url_for('reports_index') }}">All reports</a></div>
+
+{% else %}
+<div class="grid"><div class="card stat"><div class="n">{{ d.orders_today }}</div><div class="l">Orders today</div></div>
+<div class="card stat"><div class="n">{% for i, b in d.fg %}{{ b|fmt }}{% endfor %}</div><div class="l">Finished packets in stock{% if d.short %} · <span class="flag">short {{ d.short[0][1]|fmt }}</span>{% endif %}</div></div>
+<div class="card stat"><div class="n {{ 'flag' if d.alerts }}">{{ d.alerts|length }}</div><div class="l">Variance alerts (30 days)</div></div>
+<a class="card stat" href="{{ url_for('report', name='outstanding') }}"><div class="n">{{ d.outstanding|inr }}</div><div class="l">Outstanding dues</div></a></div>
+{% for n, cpp, price, m in d.costs %}<div class="card" style="margin-top:14px"><b>{{ n }}</b>: cost {{ cpp|inr }} per packet · sells at {{ price|inr }} · margin <span class="{{ 'good' if m > 0 else 'bad' }}">{{ m|inr }}</span></div>{% endfor %}
+{% if d.alerts %}<div class="warn-box" style="margin-top:14px">{% for a in d.alerts %}<div><a href="{{ url_for('run_view', rid=a.id) }}">{{ a.run_no }}</a>: {{ a.msgs|join(', ') }}</div>{% endfor %}</div>{% endif %}
+{% endif %}{% endblock %}

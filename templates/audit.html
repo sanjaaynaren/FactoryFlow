@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block body %}<h1>Audit log</h1>
+<p class="mut">Each entry stores a fingerprint of itself and the entry before it, so any edit to history breaks the chain.</p>
+<div class="btns"><a class="btn" href="?verify=1">Verify chain</a></div>
+{% if ver %}{% if ver[0] %}<div class="ok-box">Chain intact: no entry has been altered.</div>{% else %}<div class="warn-box bad">Chain broken at entry #{{ ver[1] }}. The log was tampered with.</div>{% endif %}{% endif %}
+<div class="card scroll"><table><thead><tr><th>#</th><th>Time</th><th>User</th><th>Action</th><th>Record</th><th>Detail</th><th>Hash</th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.id }}</td><td>{{ r.ts.replace('T',' ') }}</td><td>{{ r.user }}</td><td>{{ r.action }}</td><td>{{ r.entity }} {{ r.entity_id }}</td><td>{{ r.detail[:90] }}</td><td class="mut">{{ r.hash[:10] }}</td></tr>{% endfor %}</tbody></table></div>{% endblock %}

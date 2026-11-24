@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block body %}<h1>{{ rep.title }}</h1>
+{% if hint %}<p class="mut">{{ hint }}</p>{% endif %}
+{% if base and not no_filter %}<form class="filter" method="get" action="{{ base }}"><div><label>From</label><input type="date" name="start" value="{{ start }}"></div>
+<div><label>To</label><input type="date" name="end" value="{{ end }}"></div><button class="btn sm">Apply</button>
+{% if export %}<a class="btn sm ghost" href="?start={{ start }}&end={{ end }}&fmt=csv">CSV</a><a class="btn sm ghost" href="?start={{ start }}&end={{ end }}&fmt=xlsx">Excel</a><a class="btn sm ghost" href="?start={{ start }}&end={{ end }}&fmt=pdf">PDF</a>{% endif %}</form>{% endif %}
+{% if rep.actions %}<div class="btns">{% for l, u in rep.actions %}<a class="btn" href="{{ u }}">{{ l }}</a>{% endfor %}</div>{% endif %}
+<div class="card scroll">{% if rep.rows %}<table><thead><tr>{% for h in rep.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead><tbody>
+{% for r in rep.rows %}{% set link = rep.links[loop.index0] if rep.links else None %}
+<tr {% if r[0] is string and (r[0].startswith('Total')) %}class="total"{% endif %}>{% for c in r %}<td class="{{ 'num' if c is number or (c.__class__.__name__ == 'Decimal') }}">
+{% if loop.first and link %}<a href="{{ link }}">{{ c }}</a>
+{% elif c == 'FLAG' or c == 'SUBMITTED' %}<span class="pill warn">{{ c }}</span>
+{% elif c in ('ok','DONE','DISPATCHED','APPROVED','INVOICED') and loop.last %}<span class="pill ok">{{ c }}</span>
+{% elif c in ('REJECTED','OPEN') and loop.last %}<span class="pill {{ 'bad' if c == 'REJECTED' else 'warn' }}">{{ c }}</span>
+{% elif c.__class__.__name__ == 'Decimal' %}{{ c|fmt if c == c.to_integral_value() or (c|string).split('.')[-1]|length <= 3 else c|q2 }}
+{% else %}{{ c }}{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody></table>
+{% else %}<p class="mut">Nothing here for this period yet.</p>{% endif %}</div>{% endblock %}

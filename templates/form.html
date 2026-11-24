@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block body %}<h1>{{ title }}</h1>
+<form method="post" action="{{ action }}" class="card form">
+{% for f in fields %}<label for="{{ f.name }}">{{ f.label }}</label>
+{% if f.type == 'select' %}<select id="{{ f.name }}" name="{{ f.name }}">{% for v, l in f.options %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+{% else %}<input id="{{ f.name }}" name="{{ f.name }}" type="{{ f.type }}" {% if f.step %}step="{{ f.step }}"{% endif %} value="{{ f.value or '' }}" {% if f.type != 'text' %}required{% endif %}>{% endif %}{% endfor %}
+{% if note %}<p class="mut">{{ note }}</p>{% endif %}
+<div class="btns"><button class="btn">{{ submit }}</button>{% if back %}<a class="btn ghost" href="{{ back }}">Cancel</a>{% endif %}</div></form>{% endblock %}

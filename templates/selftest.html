@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block body %}<h1>Benchmark self-test</h1>
+<p class="mut">Runs the whole section 5 scenario on a fresh scratch database (your real data is untouched) and checks every expected number.</p>
+<div class="{{ 'ok-box' if out.ok else 'warn-box' }}"><b>{{ 'All checks passed' if out.ok else 'Some checks failed' }}</b></div>
+<div class="card scroll"><table><thead><tr><th>Check</th><th>Expected</th><th>Got</th><th></th></tr></thead><tbody>{% for n, e, a, ok in out.results %}<tr><td>{{ n }}</td><td>{{ e }}</td><td>{{ a }}</td><td><span class="pill {{ 'ok' if ok else 'bad' }}">{{ 'pass' if ok else 'fail' }}</span></td></tr>{% endfor %}</tbody></table></div>
+<h2>Stock integrity (live data)</h2><p class="mut">Every balance is re-derived from the ledger and cross-checked. Nothing is stored as an overwritable number.</p>
+<div class="card scroll"><table><thead><tr><th>Item</th><th class="num">Balance from ledger</th><th class="num">Sum of ins and outs</th><th>Drift</th></tr></thead><tbody>{% for n, a, b, ok in integrity %}<tr><td>{{ n }}</td><td class="num">{{ a|fmt }}</td><td class="num">{{ b|fmt }}</td><td><span class="pill {{ 'ok' if ok else 'bad' }}">{{ '0' if ok else 'check' }}</span></td></tr>{% endfor %}</tbody></table></div>{% endblock %}

@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}{{ company }}{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body>
+<div class="shell">
+<aside class="side"><div class="brand"><span class="dot"></span>FactoryFlow</div>
+<nav>{% for label, ep in nav %}<a href="{{ url_for(ep) }}" class="{{ 'on' if request.endpoint == ep }}">{{ label }}</a>{% endfor %}
+{% if more %}<details><summary>More</summary>{% for label, ep in more %}<a href="{{ url_for(ep) }}">{{ label }}</a>{% endfor %}</details>{% endif %}</nav>
+<div class="who"><b>{{ user.name }}</b>{{ user.role|capitalize }} · <a href="{{ url_for('logout') }}">Sign out</a></div></aside>
+<main>{% with msgs = get_flashed_messages(with_categories=true) %}{% for c, m in msgs %}<div class="msg {{ c }}">{{ m }}</div>{% endfor %}{% endwith %}
+{% block body %}{% endblock %}</main></div></body></html>

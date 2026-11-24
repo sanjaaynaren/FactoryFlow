@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block body %}<h1>New order</h1>
+<form method="post" class="card form" id="f">
+<label>Customer</label><select name="customer_id" id="cust">{% for c in customers %}<option value="{{ c.id }}">{{ c.name }} ({{ c.kind }})</option>{% endfor %}</select>
+<label>Products and quantities</label>
+{% for p in products %}<div class="prod"><div><b>{{ p.name }}</b><div class="mut">{{ p.price|inr }} per packet</div></div><input type="number" inputmode="numeric" min="0" step="1" name="qty_{{ p.id }}" id="q{{ p.id }}" placeholder="0"></div>{% endfor %}
+<label>Note (optional)</label><input name="remarks">
+<div class="btns"><button class="btn big">Submit order</button></div>
+<details class="mut"><summary>Paste a WhatsApp message instead</summary>
+<textarea id="wa" rows="3" placeholder="Retailer A murukku 150"></textarea><div class="btns"><button type="button" class="btn sm ghost" id="parse">Fill the order from this text</button></div><div id="pmsg" class="mut"></div></details></form>
+<script>
+document.getElementById('parse').onclick=async()=>{const r=await fetch('{{ url_for("order_parse") }}',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'text='+encodeURIComponent(document.getElementById('wa').value)});
+const j=await r.json();let n=0;if(j.customer_id){document.getElementById('cust').value=j.customer_id;}
+for(const [id,q] of Object.entries(j.lines)){const e=document.getElementById('q'+id);if(e){e.value=q;n++;}}
+document.getElementById('pmsg').textContent=(j.customer_id||n)?'Draft filled. Check it, then submit.':'Could not find a customer or product in that text.';};
+</script>{% endblock %}
