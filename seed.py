@@ -58,6 +58,25 @@ def reset(path=None):
     return db
 
 
+def init_if_empty(path=None):
+    """Initialise schema and seed only if the database is brand-new.
+
+    Safe to call on every startup; it is a no-op when data already exists.
+    This is used by the Vercel cold-start path in app.py.
+    """
+    db = dbm.connect(path)
+    try:
+        count = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+        if count == 0:
+            seed(db)
+    except Exception:
+        # Schema missing → create it then seed
+        dbm.init_db(db)
+        seed(db)
+    finally:
+        db.close()
+
+
 if __name__ == "__main__":
     reset()
     print("Database reset with benchmark master data.")

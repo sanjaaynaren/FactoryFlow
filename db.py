@@ -7,7 +7,13 @@ from decimal import Decimal
 sqlite3.register_adapter(Decimal, str)
 sqlite3.register_converter("DECTEXT", lambda b: Decimal(b.decode()))
 
-DB_PATH = os.environ.get("FACTORY_DB", os.path.join(os.path.dirname(os.path.abspath(__file__)), "factory.db"))
+# On Vercel only /tmp is writable.  Allow override via env var in all envs.
+_DEFAULT_DB = (
+    "/tmp/order_to_audit.db"
+    if os.environ.get("VERCEL")
+    else os.path.join(os.path.dirname(os.path.abspath(__file__)), "factory.db")
+)
+DB_PATH = os.environ.get("FACTORY_DB", _DEFAULT_DB)
 
 SCHEMA = """
 CREATE TABLE settings(key TEXT PRIMARY KEY, value TEXT);
@@ -62,7 +68,11 @@ CREATE TABLE locks(month TEXT PRIMARY KEY, locked_by TEXT, locked_at TEXT);
 
 
 def connect(path=None):
-    db = sqlite3.connect(path or DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
+    resolved = path or DB_PATH
+    # Ensure the parent directory exists (critical for /tmp sub-dirs, harmless elsewhere)
+    parent = os.path.dirname(os.path.abspath(resolved))
+    os.makedirs(parent, exist_ok=True)
+    db = sqlite3.connect(resolved, detect_types=sqlite3.PARSE_DECLTYPES)
     db.row_factory = sqlite3.Row
     db.execute("PRAGMA foreign_keys=ON")
     return db

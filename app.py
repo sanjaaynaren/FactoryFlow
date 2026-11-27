@@ -18,6 +18,19 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
 app.jinja_env.filters.update(fmt=fmt, inr=inr, q2=E.q2)
 
+# ---------------------------------------------------------------------------
+# Vercel cold-start initialisation
+# On every new serverless instance /tmp is empty.  Bootstrap the database
+# (schema + seed) once per process, before the first request is handled.
+# This is a no-op when the DB already contains data (idempotent check).
+# ---------------------------------------------------------------------------
+def _ensure_db():
+    """Create schema and seed demo data if the database is brand-new."""
+    import seed as _seed
+    _seed.init_if_empty()
+
+_ensure_db()
+
 NAV = {
     "salesman": [("Home", "home"), ("My orders", "orders_list"), ("New order", "order_new")],
     "admin": [("Home", "home"), ("Orders", "orders_list"), ("Invoices", "invoices"), ("Masters", "masters"), ("Stock", "stock"), ("Reports", "reports_index")],
@@ -535,8 +548,6 @@ def selftest():
 
 
 if __name__ == "__main__":
-    if not os.path.exists(dbm.DB_PATH):
-        import seed
-        seed.reset()
-        print("Created a fresh database with the benchmark master data.")
+    # _ensure_db() already ran above; this is just a local dev convenience message.
+    print(f"Database: {dbm.DB_PATH}")
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
